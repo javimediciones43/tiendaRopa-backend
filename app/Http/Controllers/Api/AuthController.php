@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\User;
+use App\Models\User;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+
 
 class AuthController extends Controller
 {
@@ -16,12 +18,12 @@ class AuthController extends Controller
         // 1. Validar los datos de entrada
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users', // email debe ser único en la base de datos users
-            'email' => 'required|string|email|max:255|unique:users',
+            'username' => 'required|string|max:255|unique:users', // username debe ser único en la base de datos users
+            'email' => 'required|string|email|max:255|unique:users', // |email|: que el campo sea del tipo email y debe ser único en la bd. users.
             'password' => 'required|string|min:8|confirmed', // confirmed: para que la contraseña y la confirmación sean iguales
         ]);
 
-        // 2. Crear el nuevo usuario en la base de datos
+        // 2. Después que paso la validación podemós crear el nuevo usuario en la base de datos.
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
@@ -30,13 +32,13 @@ class AuthController extends Controller
         ]);
 
         // 3.  Crear un token de acceso para el usuario
-        $token = $user->createToken('auth_token')->plainTextToken;
+        //$token = $user->createToken('auth_token')->plainTextToken;
 
         // 4. Retornar una respuesta exitosa con el token de acceso
         return response()->json([
             'message' => 'Usuario creado correctamente',
             'user' => $user,
-            'token' => $token,
+            //'token' => $token,
         ], 201); // 201: Created (Código creado correctamente)
     }
 
@@ -82,7 +84,8 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         // 1. Eliminar el token de acceso actual del usuario
-        $request->user()->currentAccessToken()->delete;
+        //$request->user()->currentAccessToken()->delete;
+        Auth::user()->tokens()->delete();
 
         // 2. Retornar una respuesta exitosa
         return response()->json([
@@ -98,11 +101,12 @@ class AuthController extends Controller
      */
     public function user(Request $request)
     {
-        // 1. Obtener los datos del usuario autenticado
+        // 1. Obtener los datos del usuario (perfil de usuario) autenticado
         $user = $request->user();
 
         // 2. Retornar una respuesta exitosa con los datos del usuario
         return response()->json([
+            'message' => "Acerca del perfil de usuario.",
             'user' => $user,
         ]);
     }
